@@ -28,9 +28,10 @@ class player(strategy):
 	def should_mull(self, opp_mulls):
 		pass
 
-	def pre_game_actions(self, state, active):
-		# active = 1 implies we're the active player
-		if active == ACTIVE:
+	def pre_game_actions(self, state):
+		# We can tell if we're the first player or not by checking 
+		# self.first
+		if self.first == 1:
 			pass
 		pass
 

@@ -13,5 +13,4 @@ def setup():
 def mulligan():
 	sim = setup()
 	sim.begin_game()
-#This is a change. Testing git
-# This is another change. Testing git again
+	return

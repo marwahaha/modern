@@ -3,11 +3,15 @@ import card
 
 
 class simulator:
-	''' This class will handle turn phases, check state based actions, check 
-	and resolve the stack, pass priority
+	''' This class will handle turn phases, check state based actions, 
+	check and resolve the stack, and pass priority
 
 	Active and nactive will be the players. The players will store
-	who was the first and who was the second player. '''
+	who was the first and who was the second player.
+
+	Actions like drawing cards will start in the simulator, but the 
+	actual moving of the list elements will occur in player
+	 '''
 
 	# These lists are sorted by timestamp (ie, earliest = first)
 	# Top of deck = 0
@@ -17,9 +21,8 @@ class simulator:
 	priority = 0
 	
 
-	# Initialize a game (no player decisions made here)
+	# Initialize a game (no strategy decisions made here)
 	def __init__(self, player1, player2):
-
 		self.active = player1
 		self.nactive = player2
 		# Tell players who's going first
@@ -28,6 +31,10 @@ class simulator:
 		# Initialize decks
 		self.active.shuffle()
 		self.nactive.shuffle()
+
+		# Initialize stack, tapped
+		self.stack = []
+		self.tapped = []
 
 #########################################################################
 ########################### BEGINNING OF GAME ###########################
@@ -78,12 +85,13 @@ class simulator:
 				move(self.nactive.deck, self.nactive.deck[0])
 
 		# After mulligans, determine pre game actions (ie. leyline, etc)
-		stack.append(self.active.pre_game_actions(self.nactive.pub))
-		while len(stack) > 0:
-			resolve()
-		stack.append(self.nactive.pre_game_actions(self.active.pub))
-		while len(stack) > 0:
-			resolve()
+		self.stack.append(self.active.pre_game_actions(self.nactive.pub))
+		while len(self.stack) > 0:
+			self.resolve()
+		self.stack.append(self.nactive.pre_game_actions(self.active.pub))
+		while len(self.stack) > 0:
+			self.resolve()
+		return
 
 #########################################################################
 ############# UTILITY FUNCTIONS #########################################
