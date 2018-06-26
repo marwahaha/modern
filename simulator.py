@@ -2,6 +2,46 @@ from player import *
 import card
 
 
+class ability:
+	''' Stack objects are spells, activated abilities, or triggered 
+	abilities. This will just handle abilities. This object needs to
+	be able to check its legality, enforce cost payment, and announce
+	its presence to opponents.
+	'''
+	__init__(self, controller, effect, targets):
+		self.controller = controller
+		# effect is a function that permanents or the delayed
+		# trigger handler produces.
+		self.effect = effect
+		# Targets is a list, listed in order the ability specifies
+		self.targets = targets
+
+class state:
+	''' This is the object that gets passed around to player/strategy. This
+	also stores the public states for simulator to access. Note that private
+	states (exile face down, morph, etc) can't be stored here because this is
+	passed to strategy who will use this info to make decisions. However, we 
+	do need a way to mark exiled facedown cards... (TODO)
+	'''
+
+	p1 
+	p2
+
+	def __init__(self):
+		# These lists are sorted by timestamp (ie, earliest = first = 0)
+		# Store info about tapped, etc in the permanent itself
+		stack = []
+
+		p1_grave = []
+		p2_grave = []
+
+		p1_battle = []
+		p2_battle = []
+
+		p1_exile = []
+		p2_exile = []
+
+
 class simulator:
 	''' This class will handle turn phases, check state based actions, 
 	check and resolve the stack, and pass priority
@@ -13,12 +53,13 @@ class simulator:
 	actual moving of the list elements will occur in player
 	 '''
 
-	# These lists are sorted by timestamp (ie, earliest = first)
 	# Top of deck = 0
-	stack = []
-	tapped = []
+
 	# 0 = active player, 1 = not active player
 	priority = 0
+
+	# state is the object that gets passed around to player/strategy to help
+	# in making strategy decisions.
 	
 
 	# Initialize a game (no strategy decisions made here)
@@ -32,9 +73,9 @@ class simulator:
 		self.active.shuffle()
 		self.nactive.shuffle()
 
-		# Initialize stack, tapped
-		self.stack = []
-		self.tapped = []
+		state = state()
+		state.p1 = player1
+		state.p2 = player2
 
 #########################################################################
 ########################### BEGINNING OF GAME ###########################
@@ -47,6 +88,7 @@ class simulator:
 		act_handsize = 7
 		nact_handsize = 7
 
+		################# Mulligans ##################
 		while mull_act == 1 or mull_nact == 1:
 		# While at least one player wants to mulligan:
 
@@ -72,6 +114,7 @@ class simulator:
 				mull_nact = self.nactive.should_mull(opp_mulls)
 				nact_handsize -= 1
 
+		############ Scrying ##############
 		# If handsize < 7, then scry 1
 		if act_handsize < 7:
 			top = self.active.scry(self.nactive.pub, \
@@ -84,6 +127,7 @@ class simulator:
 			if not top:
 				move(self.nactive.deck, self.nactive.deck[0])
 
+		############# Pre game effects #############
 		# After mulligans, determine pre game actions (ie. leyline, etc)
 		self.stack.append(self.active.pre_game_actions(self.nactive.pub))
 		while len(self.stack) > 0:
@@ -180,9 +224,14 @@ class simulator:
 ################### THE STACK AND STATE BASED ACTIONS ###################
 #########################################################################
 	def resolve(self):
-	# Resolve the top of the stack, check for triggered abilities, then
+	# Resolve the top of the stack, check for state based actions,
+	# check for triggered abilities, then
 	# pass priority to other player
-		pass
+		resolve_me = self.stack.pop()
+		if resolve_me.check_legality() == 1:
+			########### TODO: Check for replacement effects #############
+			resolve_me.resolve()
+
 
 	def pass_priority(self):
 	# Check for state based actions, then triggered abilities
@@ -197,3 +246,36 @@ class simulator:
 	def state_based_actions(self):
 	# Check for state based actions
 		pass
+
+#########################################################################
+####################### SPELLS (RESOLUTION, ETC) ########################
+#########################################################################
+	def cast_spell(self, player):
+		spell = player.init_spell(state)
+		if spell == 0:
+			return 0
+		if check_legality(spell) == 0:
+			spell.reset()
+			return 0
+		if paid_cost(spell) == 0:
+			spell.reset()
+			return 0
+		return spell
+
+	def check_legality(self, spell):
+		legal = 1
+		# First, check if targets are the right type and number
+		legal = self.spell.legal()
+
+		######### TODO: Check permanents for legality effects ###########
+		## Ie, flash, hexproof, shroud, protection ##
+		
+		return legal
+
+	def paid_cost(self, spell):
+		# Prompt player to pay appropriate costs
+		# 1 = paid, 0 = did not pay
+		paid = player.pay_cost(state, spell)
+		return paid
+
+

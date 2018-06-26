@@ -8,8 +8,7 @@ class player(strategy):
 	unless explicitly told to by simulator.'''
 
 	def __init__(self, cards):
-		# first stores whether or not you're going first
-		self.first = -1
+
 		# active stores whether or not we're the active player
 		self.active = -1
 
@@ -25,6 +24,11 @@ class player(strategy):
 		for card in self.decklist:
 			self.lib.append(card)
 
+		######## info for other classes/functions #######
+		self.is_player = 1
+		self.damage = 0
+		self.life = 20
+
 	def should_mull(self, opp_mulls):
 		pass
 
@@ -35,6 +39,29 @@ class player(strategy):
 			pass
 		pass
 
+	def init_spell(self, state):
+		spell = self.init_spell_strat(state)
+		if spell == 0:
+			return 0
+		else:
+			# costs are stored in spell object, find_cost_modes doesn't
+			# return anything, just alters the spell object
+			# Note: costs and modes need to happen at same time because 
+			# of Collective Brutality
+			spell = self.find_cost_modes(spell, state)
+			
+			# Update spell again, this time with targets
+			spell = self.choose_targets(spell, state)
+			# Update spell to distribute effects
+			spell = self.distr_effects(spell, state)
+
+			# Return the spell to check legality (hexproof, shroud, flash)
+			return spell
+
+	def pay_cost(self, state, spell):
+		pass
+
+
 	def scry(self, opp_state, cards):
 	# Return 1 if top, 0 if bottom
 		top = self.scry_strat(opp_state, cards)
@@ -42,6 +69,7 @@ class player(strategy):
 
 	def shuffle(self):
 		random.shuffle(self.lib)
+		return
 
 	def draw_one(self):
 		pass
