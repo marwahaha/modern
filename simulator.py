@@ -219,6 +219,13 @@ class simulator:
 	def end_step():
 		pass
 
+	def clean_up():
+		pass
+
+	def pass_turn():
+		former_active = self.active
+		self.active = self.nactive
+		self.nactive = former_active
 
 #########################################################################
 ################### THE STACK AND STATE BASED ACTIONS ###################
@@ -226,18 +233,33 @@ class simulator:
 	def resolve(self):
 	# Resolve the top of the stack, check for state based actions,
 	# check for triggered abilities, then
-	# pass priority to other player
-		resolve_me = self.stack.pop()
+	# pass priority to active player
+		resolve_me = self.state.stack.pop()
 		if resolve_me.check_legality() == 1:
 			########### TODO: Check for replacement effects #############
 			resolve_me.resolve()
+		pass_priority(self.active)
 
 
-	def pass_priority(self):
+
+	def pass_priority(self, player):
 	# Check for state based actions, then triggered abilities
 	# If an ability was triggered, then check state based actions again
-	# If no abilities were triggered, then pass priority
-		pass
+	# If no abilities were triggered, 
+	# call has_priority to prompt activated abilities
+	# or spell casting
+		state_based_actions()
+		triggered = triggered_abilities()
+		if triggered == 0:
+			# pass_priority as normal
+			spell = has_priority(player)
+			if spell == 0:
+				# The player passed priority without doing anything
+				# This means we resolve the top spell ont he stack if nothing
+				# happened.
+		else:
+			pass_priority(self, player)
+
 
 	def triggered_abilities(self):
 	# Check for triggered abilities
@@ -246,6 +268,12 @@ class simulator:
 	def state_based_actions(self):
 	# Check for state based actions
 		pass
+
+	def has_priority(self, player):
+		spell = cast_spell(player)
+		self.state.stack.append(spell)
+
+
 
 #########################################################################
 ####################### SPELLS (RESOLUTION, ETC) ########################
