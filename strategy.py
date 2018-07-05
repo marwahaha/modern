@@ -43,7 +43,7 @@ class strategy:
 		
 		return spell
 
-	def choose_targets(spell, state):
+	def choose_targets(self, spell, state):
 		## TODO: pick an appropriate target. ##
 		if first == 0:
 			spell.targets[0] = state.p1
@@ -51,6 +51,10 @@ class strategy:
 			spell.targets[0] = state.p2
 		return spell
 
-	def distr_effects(spell, state):
+	def distr_effects(self, spell, state):
 		## TODO: fill this in later with something trivial.
 		return spell
+
+	def hold_prioirty(self):
+		# For now, we don't want to hold priority
+		return 0

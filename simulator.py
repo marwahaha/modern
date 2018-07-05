@@ -16,6 +16,21 @@ class ability:
 		# Targets is a list, listed in order the ability specifies
 		self.targets = targets
 
+class stack_object:
+	''' This is what lives on the stack. They all get put in a list, so we
+	can pop/append as necessary.
+
+	NOTE: spell here refers to spell OR ability!
+	'''
+	__init__(self, spell):
+		self.spell = spell
+
+		# num_passed is the number of times priority has been passed on it 
+		# while it has been the top of the stack.
+		# Note that the stack_object can't change this itself. Instead, it
+		# gets changed by priority handlers (probably has_priority?)
+		self.num_passed = 0
+
 class state:
 	''' This is the object that gets passed around to player/strategy. This
 	also stores the public states for simulator to access. Note that private
@@ -238,7 +253,6 @@ class simulator:
 		if resolve_me.check_legality() == 1:
 			########### TODO: Check for replacement effects #############
 			resolve_me.resolve()
-		pass_priority(self.active)
 
 
 
@@ -248,36 +262,71 @@ class simulator:
 	# If no abilities were triggered, 
 	# call has_priority to prompt activated abilities
 	# or spell casting
-		state_based_actions()
-		triggered = triggered_abilities()
-		if triggered == 0:
-			# pass_priority as normal
-			spell = has_priority(player)
-			if spell == 0:
-				# The player passed priority without doing anything
-				# This means we resolve the top spell ont he stack if nothing
-				# happened.
-		else:
-			pass_priority(self, player)
 
+		# Check for SBA's and triggered abilities until there are no more
+		# changes
+		acted = 1
+		while acted == 1:
+			acted = state_based_actions()
+
+		triggered = 1
+		while triggered == 1:
+			triggered = triggered_abilities()
+
+		# Tell the stack object that priority is being passed one
+		# more time while they're on top 
+		resolve = self.state.stack[-1].times_passed += 1
+		if resolve > 1: 
+			# If priority has been passed on this more than once (ie,
+			# both players have passed priority), then resolve it
+			resolve()
+			has_priority(self.active)
+		else:
+			has_priority(player)
 
 	def triggered_abilities(self):
 	# Check for triggered abilities
-		pass
+		# No triggered abilities yet, so we just continue 
+		return 0
 
 	def state_based_actions(self):
 	# Check for state based actions
-		pass
+	# Return 1 if any state based actions occured (eg, damage is now lethal,
+	# so another creature dies, etc)
+		# No SBA's yet, so we just continue 
+		return 0
 
 	def has_priority(self, player):
 		spell = cast_spell(player)
 		self.state.stack.append(spell)
+		ability = activate_ability(player)
+		self.state.stack.append(ability)
+
+		# If the player wants to hold priority, then return 1
+		hold = 0
+		hold = player.hold_priority()
+		if hold == 1:
+			pass_priority(player)
+		else:
+			if player == state.p1:
+				other_player = self.state.p2
+			else:
+				other_player = self.state.p1
+			pass_priority(other_player)
 
 
 
 #########################################################################
-####################### SPELLS (RESOLUTION, ETC) ########################
+################ SPELLS + ABILITIES (RESOLUTION, ETC) ###################
 #########################################################################
+	def activate_ability(self,player):
+		# This is the activated ability version of spells.
+		# Perhaps they'll even end up being the same function,
+		# since there are lots of similarites 
+		# Although probably not, since they'll probably have different
+		# check_legality's
+		pass
+
 	def cast_spell(self, player):
 		spell = player.init_spell(state)
 		if spell == 0:
@@ -305,5 +354,4 @@ class simulator:
 		# 1 = paid, 0 = did not pay
 		paid = player.pay_cost(state, spell)
 		return paid
-
 
