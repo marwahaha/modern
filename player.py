@@ -35,9 +35,10 @@ class player(strategy):
 	def pre_game_actions(self, state):
 		# We can tell if we're the first player or not by checking 
 		# self.first
+		pre_game_perms = []
 		if self.first == 1:
 			pass
-		pass
+		return pre_game_perms
 
 	def init_spell(self, state):
 		spell = self.init_spell_strat(state)

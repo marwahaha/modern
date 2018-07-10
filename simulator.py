@@ -8,7 +8,7 @@ class ability:
 	be able to check its legality, enforce cost payment, and announce
 	its presence to opponents.
 	'''
-	__init__(self, controller, effect, targets):
+	def __init__(self, controller, effect, targets):
 		self.controller = controller
 		# effect is a function that permanents or the delayed
 		# trigger handler produces.
@@ -22,7 +22,7 @@ class stack_object:
 
 	NOTE: spell here refers to spell OR ability!
 	'''
-	__init__(self, spell):
+	def __init__(self, spell):
 		self.spell = spell
 
 		# num_passed is the number of times priority has been passed on it 
@@ -31,7 +31,7 @@ class stack_object:
 		# gets changed by priority handlers (probably has_priority?)
 		self.num_passed = 0
 
-class state:
+class state_obj:
 	''' This is the object that gets passed around to player/strategy. This
 	also stores the public states for simulator to access. Note that private
 	states (exile face down, morph, etc) can't be stored here because this is
@@ -39,22 +39,22 @@ class state:
 	do need a way to mark exiled facedown cards... (TODO)
 	'''
 
-	p1 
-	p2
+	p1 = None
+	p2 = None
 
 	def __init__(self):
 		# These lists are sorted by timestamp (ie, earliest = first = 0)
 		# Store info about tapped, etc in the permanent itself
-		stack = []
+		self.stack = []
 
-		p1_grave = []
-		p2_grave = []
+		self.p1_grave = []
+		self.p2_grave = []
 
-		p1_battle = []
-		p2_battle = []
+		self.p1_battle = []
+		self.p2_battle = []
 
-		p1_exile = []
-		p2_exile = []
+		self.p1_exile = []
+		self.p2_exile = []
 
 
 class simulator:
@@ -88,9 +88,9 @@ class simulator:
 		self.active.shuffle()
 		self.nactive.shuffle()
 
-		state = state()
-		state.p1 = player1
-		state.p2 = player2
+		self.state = state_obj()
+		self.state.p1 = player1
+		self.state.p2 = player2
 
 #########################################################################
 ########################### BEGINNING OF GAME ###########################
@@ -144,12 +144,8 @@ class simulator:
 
 		############# Pre game effects #############
 		# After mulligans, determine pre game actions (ie. leyline, etc)
-		self.stack.append(self.active.pre_game_actions(self.nactive.pub))
-		while len(self.stack) > 0:
-			self.resolve()
-		self.stack.append(self.nactive.pre_game_actions(self.active.pub))
-		while len(self.stack) > 0:
-			self.resolve()
+		self.state.p1_battle += self.state.p1.pre_game_actions(self.state)
+		self.state.p2_battle += self.state.p2.pre_game_actions(self.state)
 		return
 
 #########################################################################
@@ -275,7 +271,8 @@ class simulator:
 
 		# Tell the stack object that priority is being passed one
 		# more time while they're on top 
-		resolve = self.state.stack[-1].times_passed += 1
+		self.state.stack[-1].times_passed += 1
+		resolve = self.state.stack[-1].times_passed
 		if resolve > 1: 
 			# If priority has been passed on this more than once (ie,
 			# both players have passed priority), then resolve it
@@ -328,7 +325,7 @@ class simulator:
 		pass
 
 	def cast_spell(self, player):
-		spell = player.init_spell(state)
+		spell = player.init_spell(self.state)
 		if spell == 0:
 			return 0
 		if check_legality(spell) == 0:
@@ -352,6 +349,6 @@ class simulator:
 	def paid_cost(self, spell):
 		# Prompt player to pay appropriate costs
 		# 1 = paid, 0 = did not pay
-		paid = player.pay_cost(state, spell)
+		paid = player.pay_cost(self.state, spell)
 		return paid
 

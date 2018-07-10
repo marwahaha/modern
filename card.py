@@ -1,6 +1,6 @@
 class card_template:
 	# init sets things to base values (ie, cmc, mana color requirements)
-	__init__(self, owner):
+	def __init__(self, owner):
 		# DEBUG
 		debug = 1
 		# If debug is on, then print helpful info
@@ -60,7 +60,7 @@ class card_template:
 			print('spell has been reset')
 
 class bolt(card_template):
-	__init__(self):
+	def __init__(self):
 		self.cmc = 1
 		self.r = 1
 		self.name = 'lightning bolt'

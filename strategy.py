@@ -40,7 +40,6 @@ class strategy:
 			return 0
 
 	def find_cost_modes(self, spell, state):
-		
 		return spell
 
 	def choose_targets(self, spell, state):

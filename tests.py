@@ -14,3 +14,25 @@ def mulligan():
 	sim = setup()
 	sim.begin_game()
 	return
+
+def leyline():
+	sim = setup()
+	sim.bei
+
+def setup_bolt():
+	# make an instance of lightning bolt
+	bolt = card.bolt()
+
+	# put the bolt in player 1's hand
+	p1 = player([bolt])
+	# Initialize player 2 with 0's because that's equal to just passing priority
+	p2 = player([0, 0, 0])
+	sim = simulator(p1, p2)
+	return sim
+
+# initialize 
+def bolt1():
+	sim = setup_bolt()
+	# begin game actually doesn't do anything here. It just shuffles.
+	sim.begin_game()
+
