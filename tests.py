@@ -16,8 +16,13 @@ def mulligan():
 	return
 
 def leyline():
-	sim = setup()
-	sim.bei
+	# It would be great to check pre game actions actually work right now, but
+	# they're a low priority since they're not super frequent
+	# Before testing can occur, we'd need to implement the leyline cards 
+	# and ask players if they have a leyline in hand 
+	# (since there's no reason to not play one)
+	pass
+
 
 def setup_bolt():
 	# make an instance of lightning bolt
@@ -35,4 +40,12 @@ def bolt1():
 	sim = setup_bolt()
 	# begin game actually doesn't do anything here. It just shuffles.
 	sim.begin_game()
+	# Check that p1 and p2 both start with 0 damage
+	print(sim.state.p1.damage)
+	print(sim.state.p2.damage)
+	# Give player 1 (the player with bolts) priority
+	sim.has_priority(sim.state.p1)
+	# p2 should now have 3 points of damage
+	print(sim.state.p1.damage)
+	print(sim.state.p2.damage)
 

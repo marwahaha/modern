@@ -92,6 +92,8 @@ class simulator:
 		self.state.p1 = player1
 		self.state.p2 = player2
 
+		self.debug = 1
+
 #########################################################################
 ########################### BEGINNING OF GAME ###########################
 #########################################################################
@@ -263,23 +265,33 @@ class simulator:
 		# changes
 		acted = 1
 		while acted == 1:
-			acted = state_based_actions()
+			acted = self.state_based_actions()
 
 		triggered = 1
 		while triggered == 1:
-			triggered = triggered_abilities()
+			triggered = self.triggered_abilities()
 
-		# Tell the stack object that priority is being passed one
-		# more time while they're on top 
-		self.state.stack[-1].times_passed += 1
-		resolve = self.state.stack[-1].times_passed
+		resolve = 0
+		if self.state.stack != []:
+			if self.debug == 1:
+				print(self.state.stack)
+
+
+			# Tell the stack object that priority is being passed one
+			# more time while they're on top 
+			self.state.stack[-1].times_passed += 1
+			resolve = self.state.stack[-1].times_passed
+
 		if resolve > 1: 
 			# If priority has been passed on this more than once (ie,
 			# both players have passed priority), then resolve it
 			resolve()
-			has_priority(self.active)
+			if self.debug == 1:
+				print('here')
+				return
+			self.has_priority(self.active)
 		else:
-			has_priority(player)
+			self.has_priority(player)
 
 	def triggered_abilities(self):
 	# Check for triggered abilities
@@ -294,22 +306,45 @@ class simulator:
 		return 0
 
 	def has_priority(self, player):
-		spell = cast_spell(player)
-		self.state.stack.append(spell)
-		ability = activate_ability(player)
-		self.state.stack.append(ability)
+	# 	if self.debug == 1:
+	# 		if player == self.state.p1:
+	# 			print('Player 1 has priority')
+	# 		else:
+	# 			print('Player 2 has priority')
+		
+		spell = self.cast_spell(player)	
+		if spell != 0:
+			stack_spell = stack_object(spell)
+			self.state.stack.append(stack_spell)
+
+			if self.debug == 1:
+				print('spell added to stack ' + str(spell.name))
+
+		# For clarity, this will probably get merged with spell
+		# Also, right now, you get to cast a spell and activate an ability
+		# and that's not how the rules work.
+		ability = self.activate_ability(player)			
+		if ability != 0:
+				stack_ability = stack_object(ability)
+				self.state.stack.append(stack_ability)
+
+				if self.debug == 1:
+					print('ability added to stack ' + str(ability.name))
+
 
 		# If the player wants to hold priority, then return 1
 		hold = 0
 		hold = player.hold_priority()
 		if hold == 1:
-			pass_priority(player)
+			priority = self.pass_priority(player)
 		else:
-			if player == state.p1:
+			if player == self.state.p1:
 				other_player = self.state.p2
 			else:
 				other_player = self.state.p1
-			pass_priority(other_player)
+			priority = self.pass_priority(other_player)
+
+		 
 
 
 
@@ -322,16 +357,16 @@ class simulator:
 		# since there are lots of similarites 
 		# Although probably not, since they'll probably have different
 		# check_legality's
-		pass
+		return 0
 
 	def cast_spell(self, player):
 		spell = player.init_spell(self.state)
 		if spell == 0:
 			return 0
-		if check_legality(spell) == 0:
+		if self.check_legality(spell) == 0:
 			spell.reset()
 			return 0
-		if paid_cost(spell) == 0:
+		if self.paid_cost(spell) == 0:
 			spell.reset()
 			return 0
 		return spell

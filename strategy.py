@@ -34,7 +34,7 @@ class strategy:
 	def init_spell_strat(self, state):
 		# This is the just filler right now - always try to cast the first
 		# spell in your hand.
-		if len(hand > 0):
+		if len(self.hand) > 0:
 			return hand[0]
 		else:
 			return 0
@@ -54,6 +54,6 @@ class strategy:
 		## TODO: fill this in later with something trivial.
 		return spell
 
-	def hold_prioirty(self):
+	def hold_priority(self):
 		# For now, we don't want to hold priority
 		return 0

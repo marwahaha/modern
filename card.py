@@ -6,9 +6,6 @@ class card_template:
 		# If debug is on, then print helpful info
 
 		######## costs ###########
-		# Note that generic mana isn't available since the caster needs
-		# to propose how much of each type of mana to pay.
-		# colored mana costs
 		w = 0
 		u = 0
 		b = 0
