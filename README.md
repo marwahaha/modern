@@ -15,7 +15,7 @@ Simulator
 This prompts player when they're given an opportunity to do something. Cards in play
 and spells cast are handled by simulator (although the actual objects' code is stored
 in card.py, simulator instantiates these objects). Simulator passes priority and checks
-for abilties of cards in play, and gives player permission to do something whenever they
+for abilities of cards in play, and gives player permission to do something whenever they
 have priority (see pass_priority).
 
 Player
